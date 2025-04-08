@@ -1,10 +1,23 @@
 import sqlite3
 import os
-print(os.path.abspath('quran_institute.db'))
 
-# إنشاء الاتصال بقاعدة البيانات
-conn = sqlite3.connect('quran_institute.db')
+# اسم قاعدة البيانات الجديدة
+db_name = 'new_quran_institute.db'
+print("مسار قاعدة البيانات الجديدة:", os.path.abspath(db_name))
+
+# إنشاء الاتصال بقاعدة البيانات الجديدة
+conn = sqlite3.connect(db_name)
 cursor = conn.cursor()
+
+# إنشاء الجداول
+cursor.execute("DROP TABLE IF EXISTS attendance")
+cursor.execute("DROP TABLE IF EXISTS daily_recitation")
+cursor.execute("DROP TABLE IF EXISTS weakness_points")
+cursor.execute("DROP TABLE IF EXISTS memorization_plans")
+cursor.execute("DROP TABLE IF EXISTS points")
+cursor.execute("DROP TABLE IF EXISTS students")
+cursor.execute("DROP TABLE IF EXISTS study_circles")
+cursor.execute("DROP TABLE IF EXISTS teachers")
 
 # جدول الأساتذة
 cursor.execute('''
@@ -103,6 +116,33 @@ CREATE TABLE IF NOT EXISTS attendance (
 )
 ''')
 
-# حفظ التغييرات وإغلاق الاتصال
+# تجربة: إدخال بيانات مبدئية للأساتذة
+teachers_data = [
+    ("أحمد علي", "123456789", "ماجستير", "2023-10-01", "نصف القرآن"),
+    ("محمد سعيد", "987654321", "بكالوريوس", "2023-10-02", "القرآن كاملاً"),
+    ("فاطمة الزهراء", "456789123", "دكتوراه", "2023-10-03", "نصف القرآن"),
+    ("علي حسن", "321654987", "بكالوريوس", "2023-10-04", "القرآن كاملاً"),
+    ("سارة محمد", "654321789", "ماجستير", "2023-10-05", "نصف القرآن"),
+]
+
+cursor.executemany('''
+INSERT INTO teachers (name, phone, qualification, join_date, memorization_amount)
+VALUES (?, ?, ?, ?, ?)
+''', teachers_data)
+
+# عرض الجداول الموجودة
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+print("\nالجداول الموجودة حالياً:")
+for table in cursor.fetchall():
+    print("-", table[0])
+
+# عرض بيانات الأساتذة
+cursor.execute('SELECT * FROM teachers')
+rows = cursor.fetchall()
+print("\nالبيانات في جدول الأساتذة:")
+for row in rows:
+    print(row)
+
+# حفظ وإغلاق
 conn.commit()
 conn.close()

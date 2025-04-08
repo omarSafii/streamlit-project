@@ -1,86 +1,137 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import sqlite3
+st.set_page_config(
+    page_title="معهد قباء",
+    page_icon="📖",
+    layout="wide"
+)
 
-# ------ التنقل عبر الصفحات ------
-page = st.sidebar.selectbox("اختر الصفحة", ["الرئيسية", "عرض الجداول"])
+# إعداد CSS
+# إعداد CSS
+st.markdown("""
+<style>
+/* الشريط العلوي */
+.header {
+    background-color: #4CAF50;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    color: white;
+    font-size: 28px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+}
+/* زر الدخول */
+.login-button {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background-color: #f44336;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.login-button:hover {
+    background-color: #d32f2f;
+}
 
-# ------ الصفحة الرئيسية ------
-if page == "الرئيسية":
-    st.title("📖 منصة معهد التحفيظ")
-    st.write("مرحباً بك في الصفحة الرئيسية للتطبيق.")
-    
-    # محتوى الصفحة الرئيسية فقط يظهر هنا
+/* تأثير Parallax لصورة الغلاف */
+.parallax {
+    background-image: url("static/qubaa.jpg");
+    min-height: 500px; 
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# عرض الصورة من مجلد static
+if os.path.exists("static/qubaa.jpg"):
+    st.image("static/qubaa.jpg", use_column_width=True)
+else:
+    st.error("❌ ملف الصورة 'qubaa.jpg' غير موجود.")
+# Tabs رئيسية
+tab1, tab2 = st.tabs(["الرئيسية", "عرض الجداول"])
+
+########################################### TAB(1) #####################################################
+with tab1:
+    # الشريط العلوي
+    st.markdown("""
+    <div class="header">
+        <span>معهد قباء</span>
+        <button class="login-button" onclick="alert('تم الضغط على زر تسجيل الدخول/الخروج');">دخول/خروج</button>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # صورة الغلاف بتأثير Scroll Parallax
+    st.markdown('<div class="parallax"></div>', unsafe_allow_html=True)
+
+    # محتوى الصفحة
+    st.title("📖 معهد قباء")
+    st.write("مرحباً بك في منصة معهد قباء الإلكترونية.")
+
     with st.form(key="my_form"):
-        name = st.text_input("Enter your name")
-        age = st.number_input("Enter your age")
-        st.form_submit_button()
+        name = st.text_input("الاسم")
+        age = st.number_input("العمر", min_value=0)
+        st.form_submit_button("إرسال")
 
-    st.sidebar.header("Options")
-    st.sidebar.selectbox("Select a page", ["Home", "About", "Contact"])
-    
-    tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
-    with tab1:
-        st.write("This is the content of tab 1.")
-    with tab2:
-        st.write("This is the content of tab 2.")
-    with tab3:
-        st.write("This is the content of tab 3.")
+    # مكونات إضافية
+    st.button("اضغط هنا")
+    st.slider("اختر القيمة", 0, 100, 25)
 
-    with st.container(border=True):
-        st.write("This is a container with a border.")
-        with st.expander("Expand me"):
-            st.write("This is a container with an expander.")
+    # الرسوم البيانية
+    data = pd.DataFrame(np.random.randn(30, 3), columns=["a", "b", "c"])
+    st.subheader("📈 رسم بياني خطي")
+    st.line_chart(data)
 
-    st.write("This is a container with a border.")
-    st.button("Click me", help="This is a button")
-    st.slider('Select a value', min_value=0, max_value=100, value=25)
+    st.subheader("📊 رسم بياني عمودي")
+    st.bar_chart(data)
 
-    chart_data = pd.DataFrame(
-        np.random.randn(30, 3),
-        columns=['a', 'b', 'c']
-    )
-
-    st.subheader('A line chart')
-    st.line_chart(chart_data)
-
-    st.subheader('A bar chart')
-    st.bar_chart(chart_data)
-
-    st.subheader('Map')
+    st.subheader("🗺️ خريطة")
     map_data = pd.DataFrame(
         np.random.randn(1000, 2) / [50, 50] + [37.76, -122.4],
-        columns=['lat', 'lon']
+        columns=["lat", "lon"]
     )
     st.map(map_data)
 
-    st.image(os.path.join(os.getcwd(), "static", "night.jpg"), width=500)
+########################################### TAB(2) #####################################################
+with tab2:
+    st.title("📊 عرض جداول قاعدة البيانات")
 
-# ------ صفحة عرض الجداول ------
-elif page == "عرض الجداول":
-    st.title("📊 عرض جميع جداول قاعدة البيانات")
+    db_path = "new_quran_institute.db"
+    if os.path.exists(db_path):
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
 
-    # الاتصال بقاعدة البيانات
-    conn = sqlite3.connect("quran_institute.db")
-    cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = [table[0] for table in cursor.fetchall()]
 
-    # جلب أسماء الجداول
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = [table[0] for table in cursor.fetchall()]
-
-    # إنشاء التبويبات لكل جدول
-    tabs = st.tabs(tables)
-
-    for i, table in enumerate(tables):
-        with tabs[i]:
-            st.subheader(f"📋 محتوى جدول: {table}")
-            try:
-                df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
-                st.dataframe(df)
-            except Exception as e:
-                st.error(f"❌ خطأ في عرض الجدول {table}: {e}")
-
-    conn.close()
+        if not tables:
+            st.error("❌ لا توجد جداول.")
+        else:
+            table_tabs = st.tabs(tables)
+            for i, table in enumerate(tables):
+                with table_tabs[i]:
+                    st.subheader(f"📋 جدول: {table}")
+                    try:
+                        df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
+                        st.dataframe(df.style.set_properties(**{
+                            'background-color': 'lightblue',
+                            'color': 'black'
+                        }).set_table_styles([{
+                            'selector': 'th',
+                            'props': [('background-color', 'darkblue'), ('color', 'white')]
+                        }]))
+                    except Exception as e:
+                        st.error(f"خطأ في الجدول {table}: {e}")
+        conn.close()
+    else:
+        st.error("❌ ملف قاعدة البيانات غير موجود.")
