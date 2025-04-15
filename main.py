@@ -3,6 +3,8 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import os
+import base64
+
 # ---------------------------- الإعدادات الأساسية ----------------------------
 st.set_page_config(
     page_title="معهد قباء",
@@ -11,92 +13,141 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------------------------- CSS مخصص مع تحسينات ----------------------------
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+# ---------------------------- CSS مخصص مع تحسينات الخلفية ----------------------------
+def set_background(image_path):
+    with open(image_path, "rb") as f:
+        img_data = f.read()
+    b64_img = base64.b64encode(img_data).decode()
+    
+    st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+    
+    .stApp {{
+        background-image: url("data:image/png;base64,{b64_img}");
+background-size: 50% auto;   /* 50% من عرض العنصر، ارتفاع تلقائي */
+background-size: 300px 300px; /* عرض 300px وارتفاع 200px */        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        /* احذف الطبقة البيضاء هذه:
+        background-color: rgba(229, 9, 9, 0.4); 
+        background-blend-mode: lighten;
+        */
+    }}
+    
+    body {{
+        font-family: 'Amiri', serif !important;
+        color: #2d3436;
+    }}
+    
+    .header {{
+        background: linear-gradient(45deg, #1a4d2e, #2d6a4f);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        color: white;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }}
+    
+    .login-btn {{
+        position: absolute;
+        top: 50%;
+        right: 2rem;
+        transform: translateY(-50%);
+        background: #9b2226 !important;
+        color: white !important;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 30px;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        backdrop-filter: blur(5px);
+    }}
+    
+    .login-btn:hover {{
+        background: #7f1d1d !important;
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }}
+    
+    .stForm {{
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.1);
+        backdrop-filter: blur(5px);
+    }}
+    
+    .stButton > button {{
+        border-radius: 10px !important;
+        padding: 0.8rem 1.5rem !important;
+        background: linear-gradient(45deg, #1a5d2e, #2d6a4f) !important;
+        color: white !important;
+        font-weight: bold !important;
+        transition: all 0.3s !important;
+        border: none !important;
+    }}
+    
+    .stButton > button:hover {{
+        transform: translateY(-2px) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    }}
+    
+    .data-table {{
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.1);
+        backdrop-filter: blur(5px);
+    }}
+    
+    .metric-card {{
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-left: 5px solid #1a5d2e;
+        transition: all 0.3s;
+        backdrop-filter: blur(5px);
+    }}
+    
+    .metric-card:hover {{
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }}
+    
+    .stTabs > div > div > div > div {{
+        background-color: transparent !important;
+    }}
+    
+    .stTab {{
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 10px !important;
+        padding: 1rem !important;
+        margin: 5px !important;
+        transition: all 0.3s !important;
+    }}
+    
+    .stTab:hover {{
+        background: rgba(255, 255, 255, 1) !important;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1) !important;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
-body {
-    font-family: 'Amiri', serif !important;
-    background-color: #f0f8ff;
-}
+# استدعاء دالة إعداد الخلفية
+set_background(r"C:\Users\1\Desktop\ST\static\background.png")
 
-.header {
-    background: linear-gradient(45deg, #1a4d2e, #2d6a4f);
-    padding: 2rem;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    color: white;
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-}
-
-.login-btn {
-    position: absolute;
-    top: 50%;
-    right: 2rem;
-    transform: translateY(-50%);
-    background: #9b2226 !important;
-    color: white !important;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 30px;
-    font-size: 1.2rem;
-    transition: all 0.3s;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-}
-
-.login-btn:hover {
-    background: #7f1d1d !important;
-    transform: translateY(-50%) scale(1.05);
-}
-
-.stForm {
-    background: #fff;
-    border-radius: 15px;
-    padding: 2rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border: 1px solid #e0e0e0;
-}
-
-.stButton > button {
-    border-radius: 10px !important;
-    padding: 0.8rem 1.5rem !important;
-    background: #1a5d2e !important;
-    color: white !important;
-    font-weight: bold !important;
-    transition: transform 0.2s !important;
-}
-
-.stButton > button:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2) !important;
-}
-
-.data-table {
-    background: #fff;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid #e0e0e0;
-}
-
-.metric-card {
-    background: #fff;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border-left: 5px solid #1a5d2e;
-    transition: transform 0.2s;
-}
-
-.metric-card:hover {
-    transform: translateY(-2px);
-}
-</style>
-""", unsafe_allow_html=True)
+# ---------------------------- بقية الكود بدون تغيير ----------------------------
+# ... [الكود الأصلي المتبقي بدون تعديلات] ...
 
 # ---------------------------- الهيكل الرئيسي مع تحسينات ----------------------------
 # الهيدر مع زر الدخول
