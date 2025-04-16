@@ -14,26 +14,16 @@ st.set_page_config(
 )
 
 # ---------------------------- CSS مخصص مع تحسينات الخلفية ----------------------------
-def set_background(image_path):
-    with open(image_path, "rb") as f:
-        img_data = f.read()
-    b64_img = base64.b64encode(img_data).decode()
+#def set_background(image_path):
+#    with open(image_path, "rb") as f:
+#        img_data = f.read()
+#    b64_img = base64.b64encode(img_data).decode()
     
-    st.markdown(f"""
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
     
-    .stApp {{
-        background-image: url("data:image/png;base64,{b64_img}");
-background-size: 50% auto;   /* 50% من عرض العنصر، ارتفاع تلقائي */
-background-size: 300px 300px; /* عرض 300px وارتفاع 200px */        background-attachment: fixed;
-        background-position: center;
-        background-repeat: no-repeat;
-        /* احذف الطبقة البيضاء هذه:
-        background-color: rgba(229, 9, 9, 0.4); 
-        background-blend-mode: lighten;
-        */
-    }}
+    
     
     body {{
         font-family: 'Amiri', serif !important;
@@ -144,7 +134,6 @@ background-size: 300px 300px; /* عرض 300px وارتفاع 200px */        bac
     """, unsafe_allow_html=True)
 
 # استدعاء دالة إعداد الخلفية
-set_background(r"C:\Users\1\Desktop\ST\static\background.png")
 
 # ---------------------------- بقية الكود بدون تغيير ----------------------------
 # ... [الكود الأصلي المتبقي بدون تعديلات] ...
